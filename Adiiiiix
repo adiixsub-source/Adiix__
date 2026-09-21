@@ -1,62 +1,82 @@
 --============================================--
---   🔑 Adiix Key System - حماية بـ ٣٠ كود   --
+--   🔑 Adiix Key System v4 - بدون تشفير      --
+--   20 كود 30 دقيقة + 20 كود 24 ساعة + ماستر --
 --============================================--
 
-local DURATION  = 1800  -- مدة الكود: 30 دقيقة (بالثواني)
-local SAVE_FILE = "adiix_used_keys.txt" -- ملف حفظ الأكواد المستعملة
-local SCRIPT_URL = "https://raw.githubusercontent.com/adiixsub-source/Adiiiiiix/refs/heads/main/Adiix"
+--=============== نظام الأكواد ===============--
+local D30 = 1800
+local D24 = 86400
+local SAVE_FILE = "adiix_keys_v2.txt"
+local IG_URL = "https://www.instagram.com/adx4m.exe?stkn=MWJsMGpjb2FzNmY2OQ%3D%3D&utm_source=qr"
 
-local HttpService = game:GetService("HttpService")
+local K30 = { "C8ZATW", "2TZSKT", "EJ4YJ6", "B7BVAZ", "8B3V9X", "ZHJY2G", "9BFRDH", "DG42GE", "9HM7JF", "XPNMB5", "7NPBKZ", "AWEG95", "R7NBX4", "B5U3JV", "CWZAPN", "B32H3M", "ZBKS2T", "GWWTEC", "HNDZZP", "DP888Q" }
+local K24 = { "MQT2SA", "R2RMKV", "JE2D9A", "GMJDCG", "GSMMK2", "RFJXTY", "UXNUS7", "AVCWTG", "RZXJPQ", "6UYJ57", "PHAYRZ", "78RJUG", "BE3YFP", "5PF3FX", "NNT9MT", "A83WMK", "BJCEVA", "23NM9V", "3SK797", "HK46AK" }
+
+local SCRIPT_URL = "https://raw.githubusercontent.com/adiixsub-source/Adiiiiiix/refs/heads/main/Adiix"  -- ⬅️ رابط السكربت الحقيقي، غيّره من هنا
+local MASTER_KEY = "ADIIX-OWNER-NS42MW6W885KGG35J49FJNVZ"  -- ⬅️ كود الماستر (لا تعطه لأحد)
+
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
--- الأكواد الثلاثين
-local KEYS = {
-    "2KEAB7", "2S2RR5", "2WAM5C", "5P5NRR", "6GSEWW", "6YQJ5E",
-    "8KF8S7", "8M5A5T", "AK23FG", "E5F6TW", "FGBM2J", "JEKWA9",
-    "JYJ2J6", "MPPDGS", "P55SRG", "PK593R", "PT7WZG", "PUQ57W",
-    "QXBWCA", "RDNV9X", "SAPFBH", "SJARJB", "TYZY38", "URZ525",
-    "WNDFX5", "WR8PJV", "X7MH4X", "YWAM64", "Z3D4M4", "ZCNBJD",
-}
-
--- ✅ تحميل الأكواد المستعملة من الملف (يتذكر حتى لو طلع ورجع)
-local used = {}
-pcall(function()
-    if isfile and isfile(SAVE_FILE) then
-        local data = HttpService:JSONDecode(readfile(SAVE_FILE))
-        if type(data) == "table" then used = data end
+local function inList(list, k)
+    for _, v in ipairs(list) do
+        if v == k then return true end
     end
-end)
+    return false
+end
 
-local function saveUsed()
+local function fmt(sec)
+    local h = math.floor(sec / 3600)
+    local m = math.floor((sec % 3600) / 60)
+    local s = sec % 60
+    return string.format("%02d:%02d:%02d", h, m, s)
+end
+
+local function loadUsed()
+    local used = {}
+    pcall(function()
+        if isfile and isfile(SAVE_FILE) then
+            for k, t, d in string.gmatch(readfile(SAVE_FILE), "(%w+),(%d+),(%d+)") do
+                used[k] = { t = tonumber(t), d = tonumber(d) }
+            end
+        end
+    end)
+    return used
+end
+
+local function saveUsed(used)
     pcall(function()
         if writefile then
-            writefile(SAVE_FILE, HttpService:JSONEncode(used))
+            local parts = {}
+            for k, v in pairs(used) do
+                parts[#parts + 1] = k .. "," .. tostring(v.t) .. "," .. tostring(v.d)
+            end
+            writefile(SAVE_FILE, table.concat(parts, "|"))
         end
     end)
 end
 
--- ✅ فحص إذا عنده كود شغال حالياً (لسه ما خلصت الـ 30 دقيقة)
-local function getActiveTimeLeft()
-    for _, t in pairs(used) do
-        local left = DURATION - (os.time() - t)
-        if left > 0 then
-            return left
-        end
+local used = loadUsed()
+
+local function activeLeft()
+    for _, v in pairs(used) do
+        local left = v.d - (os.time() - v.t)
+        if left > 0 then return left end
     end
     return nil
 end
 
--- ✅ تشغيل السكربت الأصلي + عداد الوقت + طرد عند الانتهاء
-local function runScript(timeLeft)
+local function runPayload()
     task.spawn(function()
         local ok, err = pcall(function()
             loadstring(game:HttpGet(SCRIPT_URL))()
         end)
         if not ok then warn("Script error: " .. tostring(err)) end
     end)
+end
 
-    -- عداد صغير يبين الوقت الباقي
+local function runScript(timeLeft)
+    runPayload()
     task.spawn(function()
         local sg = Instance.new("ScreenGui")
         sg.Name = "AdiixTimer"
@@ -65,8 +85,8 @@ local function runScript(timeLeft)
             sg.Parent = (gethui and gethui()) or game:GetService("CoreGui")
         end)
         local lbl = Instance.new("TextLabel")
-        lbl.Size = UDim2.new(0, 180, 0, 30)
-        lbl.Position = UDim2.new(0.5, -90, 0, 10)
+        lbl.Size = UDim2.new(0, 200, 0, 30)
+        lbl.Position = UDim2.new(0.5, -100, 0, 10)
         lbl.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
         lbl.BackgroundTransparency = 0.3
         lbl.TextColor3 = Color3.new(1, 1, 1)
@@ -77,17 +97,116 @@ local function runScript(timeLeft)
 
         local remaining = timeLeft
         while remaining > 0 do
-            lbl.Text = string.format("⏳ Time left: %02d:%02d", math.floor(remaining / 60), remaining % 60)
+            lbl.Text = "⏳ Time left: " .. fmt(remaining)
             task.wait(1)
-            remaining -= 1
+            remaining = remaining - 1
         end
         sg:Destroy()
-        -- ⛔ خلص الوقت: يطلعه من اللعبة ويطلب الكود التالي لما يرجع
-        player:Kick("⏰ Your 30 minutes are over! Get the next key.")
+        player:Kick("⏰ Time is over! Get a new key.")
     end)
 end
 
--- ✅ نافذة إدخال الكود
+local function makeLabel(parent, txt, y)
+    local l = Instance.new("TextLabel")
+    l.Size = UDim2.new(1, -20, 0, 22)
+    l.Position = UDim2.new(0, 10, 0, y)
+    l.BackgroundTransparency = 1
+    l.Text = txt
+    l.TextColor3 = Color3.fromRGB(230, 230, 230)
+    l.Font = Enum.Font.Gotham
+    l.TextSize = 14
+    l.TextXAlignment = Enum.TextXAlignment.Left
+    l.Parent = parent
+    return l
+end
+
+--=============== لوحة المالك ===============--
+local function showAdmin()
+    local sg = Instance.new("ScreenGui")
+    sg.Name = "AdiixOwnerPanel"
+    sg.ResetOnSpawn = false
+    pcall(function()
+        sg.Parent = (gethui and gethui()) or game:GetService("CoreGui")
+    end)
+
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0, 360, 0, 300)
+    frame.Position = UDim2.new(0.5, -180, 0.5, -150)
+    frame.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+    frame.BorderSizePixel = 0
+    frame.Parent = sg
+    Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)
+
+    local title = Instance.new("TextLabel")
+    title.Size = UDim2.new(1, 0, 0, 44)
+    title.BackgroundTransparency = 1
+    title.Text = "👑 Adiix Owner Panel"
+    title.TextColor3 = Color3.fromRGB(255, 215, 0)
+    title.Font = Enum.Font.GothamBold
+    title.TextSize = 20
+    title.Parent = frame
+
+    local c30, c24 = 0, 0
+    for k, _ in pairs(used) do
+        if inList(K30, k) then c30 = c30 + 1
+        elseif inList(K24, k) then c24 = c24 + 1 end
+    end
+
+    local actTxt = "Active key: none right now"
+    for k, v in pairs(used) do
+        local left = v.d - (os.time() - v.t)
+        if left > 0 then
+            actTxt = "Active: " .. k .. "  |  left " .. fmt(left)
+            break
+        end
+    end
+
+    makeLabel(frame, "30-min keys used:  " .. c30 .. " / 20", 52)
+    makeLabel(frame, "24-hour keys used: " .. c24 .. " / 20", 78)
+    makeLabel(frame, "Total activations (this device): " .. (c30 + c24), 104)
+    makeLabel(frame, actTxt, 130)
+
+    local listTxt = "Used keys: "
+    local arr = {}
+    for k, _ in pairs(used) do arr[#arr + 1] = k end
+    if #arr == 0 then listTxt = listTxt .. "none"
+    else listTxt = listTxt .. table.concat(arr, ", ") end
+    local ll = makeLabel(frame, listTxt, 156)
+    ll.Size = UDim2.new(1, -20, 0, 60)
+    ll.TextWrapped = true
+    ll.TextYAlignment = Enum.TextYAlignment.Top
+
+    local run = Instance.new("TextButton")
+    run.Size = UDim2.new(0.45, 0, 0, 36)
+    run.Position = UDim2.new(0.05, 0, 1, -50)
+    run.BackgroundColor3 = Color3.fromRGB(0, 170, 90)
+    run.Text = "▶ Run Script"
+    run.TextColor3 = Color3.new(1, 1, 1)
+    run.Font = Enum.Font.GothamBold
+    run.TextSize = 15
+    run.Parent = frame
+    Instance.new("UICorner", run).CornerRadius = UDim.new(0, 8)
+    run.MouseButton1Click:Connect(function()
+        sg:Destroy()
+        runPayload()
+    end)
+
+    local close = Instance.new("TextButton")
+    close.Size = UDim2.new(0.45, 0, 0, 36)
+    close.Position = UDim2.new(0.5, 0, 1, -50)
+    close.BackgroundColor3 = Color3.fromRGB(170, 50, 50)
+    close.Text = "✖ Close"
+    close.TextColor3 = Color3.new(1, 1, 1)
+    close.Font = Enum.Font.GothamBold
+    close.TextSize = 15
+    close.Parent = frame
+    Instance.new("UICorner", close).CornerRadius = UDim.new(0, 8)
+    close.MouseButton1Click:Connect(function()
+        sg:Destroy()
+    end)
+end
+
+--=============== نافذة الكود ===============--
 local function showKeyUI()
     local sg = Instance.new("ScreenGui")
     sg.Name = "AdiixKeySystem"
@@ -97,8 +216,8 @@ local function showKeyUI()
     end)
 
     local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(0, 300, 0, 180)
-    frame.Position = UDim2.new(0.5, -150, 0.5, -90)
+    frame.Size = UDim2.new(0, 320, 0, 225)
+    frame.Position = UDim2.new(0.5, -160, 0.5, -112)
     frame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
     frame.BorderSizePixel = 0
     frame.Parent = sg
@@ -115,19 +234,20 @@ local function showKeyUI()
 
     local box = Instance.new("TextBox")
     box.Size = UDim2.new(1, -40, 0, 40)
-    box.Position = UDim2.new(0, 20, 0, 50)
-    box.PlaceholderText = "Enter your 6-digit key..."
+    box.Position = UDim2.new(0, 20, 0, 48)
+    box.PlaceholderText = "Enter your key..."
     box.Text = ""
     box.BackgroundColor3 = Color3.fromRGB(40, 40, 55)
     box.TextColor3 = Color3.new(1, 1, 1)
     box.Font = Enum.Font.Gotham
     box.TextSize = 16
+    box.ClearTextOnFocus = false
     box.Parent = frame
     Instance.new("UICorner", box).CornerRadius = UDim.new(0, 8)
 
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1, -40, 0, 36)
-    btn.Position = UDim2.new(0, 20, 0, 100)
+    btn.Position = UDim2.new(0, 20, 0, 98)
     btn.BackgroundColor3 = Color3.fromRGB(0, 170, 90)
     btn.Text = "✔ Submit"
     btn.TextColor3 = Color3.new(1, 1, 1)
@@ -135,6 +255,17 @@ local function showKeyUI()
     btn.TextSize = 16
     btn.Parent = frame
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+
+    local ig = Instance.new("TextButton")
+    ig.Size = UDim2.new(1, -40, 0, 32)
+    ig.Position = UDim2.new(0, 20, 0, 142)
+    ig.BackgroundColor3 = Color3.fromRGB(195, 45, 130)
+    ig.Text = "📸 Contact me on Instagram"
+    ig.TextColor3 = Color3.new(1, 1, 1)
+    ig.Font = Enum.Font.GothamBold
+    ig.TextSize = 14
+    ig.Parent = frame
+    Instance.new("UICorner", ig).CornerRadius = UDim.new(0, 8)
 
     local status = Instance.new("TextLabel")
     status.Size = UDim2.new(1, 0, 0, 26)
@@ -146,41 +277,50 @@ local function showKeyUI()
     status.TextSize = 13
     status.Parent = frame
 
+    ig.MouseButton1Click:Connect(function()
+        pcall(function()
+            if setclipboard then setclipboard(IG_URL) end
+        end)
+        status.TextColor3 = Color3.fromRGB(80, 255, 120)
+        status.Text = "✅ Instagram link copied! Paste it in your browser."
+    end)
+
     btn.MouseButton1Click:Connect(function()
         local input = box.Text:gsub("%s+", ""):upper()
 
-        if #input ~= 6 then
-            status.Text = "❌ Key must be 6 characters!"
+        if input == MASTER_KEY then
+            sg:Destroy()
+            showAdmin()
             return
         end
 
-        -- ⛔ كود مستعمل من قبل؟ ما يرجع يشتغل أبداً
         if used[input] then
+            status.TextColor3 = Color3.fromRGB(255, 80, 80)
             status.Text = "❌ This key was already used!"
             return
         end
 
-        local valid = false
-        for _, k in ipairs(KEYS) do
-            if k == input then valid = true break end
-        end
-        if not valid then
+        local dur = nil
+        if inList(K30, input) then dur = D30
+        elseif inList(K24, input) then dur = D24 end
+
+        if not dur then
+            status.TextColor3 = Color3.fromRGB(255, 80, 80)
             status.Text = "❌ Wrong key!"
             return
         end
 
-        -- ✅ نجاح: سجل الكود واحفظه وأخفِ الواجهة فوراً
-        used[input] = os.time()
-        saveUsed()
-        sg:Destroy()          -- ⬅️ الواجهة تختفي بنفس اللحظة
-        runScript(DURATION)
+        used[input] = { t = os.time(), d = dur }
+        saveUsed(used)
+        sg:Destroy()
+        runScript(dur)
     end)
 end
 
--- ✅ البداية: إذا عنده كود شغال يكمل، غيره يطلب كود جديد
-local timeLeft = getActiveTimeLeft()
-if timeLeft then
-    runScript(timeLeft)
+--=============== البداية ===============--
+local left = activeLeft()
+if left then
+    runScript(left)
 else
     showKeyUI()
 end
