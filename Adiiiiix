@@ -12,6 +12,9 @@ local IG_URL = "https://www.instagram.com/adx4m.exe?stkn=MWJsMGpjb2FzNmY2OQ%3D%3
 local K30 = { "C8ZATW", "2TZSKT", "EJ4YJ6", "B7BVAZ", "8B3V9X", "ZHJY2G", "9BFRDH", "DG42GE", "9HM7JF", "XPNMB5", "7NPBKZ", "AWEG95", "R7NBX4", "B5U3JV", "CWZAPN", "B32H3M", "ZBKS2T", "GWWTEC", "HNDZZP", "DP888Q" }
 local K24 = { "MQT2SA", "R2RMKV", "JE2D9A", "GMJDCG", "GSMMK2", "RFJXTY", "UXNUS7", "AVCWTG", "RZXJPQ", "6UYJ57", "PHAYRZ", "78RJUG", "BE3YFP", "5PF3FX", "NNT9MT", "A83WMK", "BJCEVA", "23NM9V", "3SK797", "HK46AK" }
 
+-- ♾️ كود مدى الحياة (يشتغل مرة وحدة بس، ومن يستخدمه يفتح السكربت للأبد بدون عداد)
+local LIFETIME_KEY = "SOLTAN-OSTORA12"
+
 local SCRIPT_URL = "https://raw.githubusercontent.com/adiixsub-source/Adiiiiiix/refs/heads/main/Adiix"  -- ⬅️ رابط السكربت الحقيقي، غيّره من هنا
 local MASTER_KEY = "ADIIX-OWNER-NS42MW6W885KGG35J49FJNVZ"  -- ⬅️ كود الماستر (لا تعطه لأحد)
 
@@ -36,7 +39,7 @@ local function loadUsed()
     local used = {}
     pcall(function()
         if isfile and isfile(SAVE_FILE) then
-            for k, t, d in string.gmatch(readfile(SAVE_FILE), "(%w+),(%d+),(%d+)") do
+            for k, t, d in string.gmatch(readfile(SAVE_FILE), "([%w%-]+),(%d+),(%d+)") do
                 used[k] = { t = tonumber(t), d = tonumber(d) }
             end
         end
@@ -60,6 +63,7 @@ local used = loadUsed()
 
 local function activeLeft()
     for _, v in pairs(used) do
+        if v.d == 0 then return math.huge end -- مدى الحياة
         local left = v.d - (os.time() - v.t)
         if left > 0 then return left end
     end
@@ -155,6 +159,10 @@ local function showAdmin()
     local actTxt = "Active key: none right now"
     for k, v in pairs(used) do
         local left = v.d - (os.time() - v.t)
+        if v.d == 0 then
+            actTxt = "Active: " .. k .. "  |  lifetime ♾️"
+            break
+        end
         if left > 0 then
             actTxt = "Active: " .. k .. "  |  left " .. fmt(left)
             break
@@ -163,16 +171,18 @@ local function showAdmin()
 
     makeLabel(frame, "30-min keys used:  " .. c30 .. " / 20", 52)
     makeLabel(frame, "24-hour keys used: " .. c24 .. " / 20", 78)
-    makeLabel(frame, "Total activations (this device): " .. (c30 + c24), 104)
-    makeLabel(frame, actTxt, 130)
+    local lifeUsed = used[LIFETIME_KEY] and "yes (1/1)" or "no (0/1)"
+    makeLabel(frame, "Lifetime key used:  " .. lifeUsed, 104)
+    makeLabel(frame, "Total activations (this device): " .. (c30 + c24 + (used[LIFETIME_KEY] and 1 or 0)), 130)
+    makeLabel(frame, actTxt, 156)
 
     local listTxt = "Used keys: "
     local arr = {}
     for k, _ in pairs(used) do arr[#arr + 1] = k end
     if #arr == 0 then listTxt = listTxt .. "none"
     else listTxt = listTxt .. table.concat(arr, ", ") end
-    local ll = makeLabel(frame, listTxt, 156)
-    ll.Size = UDim2.new(1, -20, 0, 60)
+    local ll = makeLabel(frame, listTxt, 182)
+    ll.Size = UDim2.new(1, -20, 0, 44)
     ll.TextWrapped = true
     ll.TextYAlignment = Enum.TextYAlignment.Top
 
@@ -294,6 +304,19 @@ local function showKeyUI()
             return
         end
 
+        if input == LIFETIME_KEY then
+            if used[input] then
+                status.TextColor3 = Color3.fromRGB(255, 80, 80)
+                status.Text = "❌ This key was already used!"
+                return
+            end
+            used[input] = { t = os.time(), d = 0 } -- d=0 = مدى الحياة
+            saveUsed(used)
+            sg:Destroy()
+            runPayload() -- ♾️ بدون عداد وبدون طرد
+            return
+        end
+
         if used[input] then
             status.TextColor3 = Color3.fromRGB(255, 80, 80)
             status.Text = "❌ This key was already used!"
@@ -319,7 +342,9 @@ end
 
 --=============== البداية ===============--
 local left = activeLeft()
-if left then
+if left == math.huge then
+    runPayload() -- ♾️ مدى الحياة: يشتغل مباشرة بدون عداد
+elseif left then
     runScript(left)
 else
     showKeyUI()
