@@ -226,60 +226,102 @@ local function showKeyUI()
     end)
 
     local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(0, 320, 0, 225)
-    frame.Position = UDim2.new(0.5, -160, 0.5, -112)
-    frame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+    frame.Size = UDim2.new(0, 340, 0, 265)
+    frame.Position = UDim2.new(0.5, -170, 0.5, -132)
+    frame.BackgroundColor3 = Color3.fromRGB(18, 18, 28)
     frame.BorderSizePixel = 0
+    frame.Active = true
+    frame.Draggable = true
     frame.Parent = sg
-    Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
+    Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 14)
+    local stroke = Instance.new("UIStroke", frame)
+    stroke.Color = Color3.fromRGB(255, 200, 0)
+    stroke.Thickness = 1.5
+    stroke.Transparency = 0.5
 
+    -- ❌ زر إغلاق: من ما عنده كود يطلع من الواجهة
+    local closeX = Instance.new("TextButton")
+    closeX.Size = UDim2.new(0, 30, 0, 30)
+    closeX.Position = UDim2.new(1, -38, 0, 8)
+    closeX.BackgroundColor3 = Color3.fromRGB(45, 45, 60)
+    closeX.Text = "X"
+    closeX.TextColor3 = Color3.fromRGB(255, 100, 100)
+    closeX.Font = Enum.Font.GothamBold
+    closeX.TextSize = 15
+    closeX.Parent = frame
+    Instance.new("UICorner", closeX).CornerRadius = UDim.new(0, 8)
+    closeX.MouseButton1Click:Connect(function()
+        sg:Destroy()
+    end)
+
+    -- العنوان
     local title = Instance.new("TextLabel")
-    title.Size = UDim2.new(1, 0, 0, 40)
+    title.Size = UDim2.new(1, 0, 0, 34)
+    title.Position = UDim2.new(0, 0, 0, 14)
     title.BackgroundTransparency = 1
-    title.Text = "🔑 Adiix Key System"
-    title.TextColor3 = Color3.new(1, 1, 1)
+    title.Text = "🔑 ADIIX"
+    title.TextColor3 = Color3.fromRGB(255, 200, 0)
     title.Font = Enum.Font.GothamBold
-    title.TextSize = 18
+    title.TextSize = 22
     title.Parent = frame
 
+    local sub = Instance.new("TextLabel")
+    sub.Size = UDim2.new(1, 0, 0, 20)
+    sub.Position = UDim2.new(0, 0, 0, 48)
+    sub.BackgroundTransparency = 1
+    sub.Text = "Enter your key to continue"
+    sub.TextColor3 = Color3.fromRGB(150, 150, 165)
+    sub.Font = Enum.Font.Gotham
+    sub.TextSize = 13
+    sub.Parent = frame
+
+    -- خانة الكود
     local box = Instance.new("TextBox")
-    box.Size = UDim2.new(1, -40, 0, 40)
-    box.Position = UDim2.new(0, 20, 0, 48)
+    box.Size = UDim2.new(1, -40, 0, 44)
+    box.Position = UDim2.new(0, 20, 0, 78)
     box.PlaceholderText = "Enter your key..."
     box.Text = ""
-    box.BackgroundColor3 = Color3.fromRGB(40, 40, 55)
+    box.BackgroundColor3 = Color3.fromRGB(32, 32, 46)
     box.TextColor3 = Color3.new(1, 1, 1)
-    box.Font = Enum.Font.Gotham
+    box.PlaceholderColor3 = Color3.fromRGB(120, 120, 135)
+    box.Font = Enum.Font.GothamBold
     box.TextSize = 16
     box.ClearTextOnFocus = false
     box.Parent = frame
-    Instance.new("UICorner", box).CornerRadius = UDim.new(0, 8)
+    Instance.new("UICorner", box).CornerRadius = UDim.new(0, 10)
+    local boxStroke = Instance.new("UIStroke", box)
+    boxStroke.Color = Color3.fromRGB(70, 70, 95)
+    boxStroke.Thickness = 1
+    boxStroke.Transparency = 0.4
 
+    -- زر التأكيد
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1, -40, 0, 36)
-    btn.Position = UDim2.new(0, 20, 0, 98)
+    btn.Size = UDim2.new(1, -40, 0, 40)
+    btn.Position = UDim2.new(0, 20, 0, 132)
     btn.BackgroundColor3 = Color3.fromRGB(0, 170, 90)
-    btn.Text = "✔ Submit"
+    btn.Text = "✔  Unlock"
     btn.TextColor3 = Color3.new(1, 1, 1)
     btn.Font = Enum.Font.GothamBold
-    btn.TextSize = 16
+    btn.TextSize = 17
     btn.Parent = frame
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 10)
 
+    -- زر الإنستغرام (من ما عنده كود يتواصل وياك)
     local ig = Instance.new("TextButton")
-    ig.Size = UDim2.new(1, -40, 0, 32)
-    ig.Position = UDim2.new(0, 20, 0, 142)
+    ig.Size = UDim2.new(1, -40, 0, 36)
+    ig.Position = UDim2.new(0, 20, 0, 182)
     ig.BackgroundColor3 = Color3.fromRGB(195, 45, 130)
-    ig.Text = "📸 Contact me on Instagram"
+    ig.Text = "📸  Get a key — Instagram"
     ig.TextColor3 = Color3.new(1, 1, 1)
     ig.Font = Enum.Font.GothamBold
     ig.TextSize = 14
     ig.Parent = frame
-    Instance.new("UICorner", ig).CornerRadius = UDim.new(0, 8)
+    Instance.new("UICorner", ig).CornerRadius = UDim.new(0, 10)
 
+    -- رسالة الحالة
     local status = Instance.new("TextLabel")
-    status.Size = UDim2.new(1, 0, 0, 26)
-    status.Position = UDim2.new(0, 0, 1, -28)
+    status.Size = UDim2.new(1, 0, 0, 24)
+    status.Position = UDim2.new(0, 0, 1, -30)
     status.BackgroundTransparency = 1
     status.Text = ""
     status.TextColor3 = Color3.fromRGB(255, 80, 80)
@@ -317,6 +359,7 @@ local function showKeyUI()
             return
         end
 
+        -- ⛔ كود مستعمل من قبل؟ ما يرجع يشتغل أبداً
         if used[input] then
             status.TextColor3 = Color3.fromRGB(255, 80, 80)
             status.Text = "❌ This key was already used!"
@@ -333,6 +376,7 @@ local function showKeyUI()
             return
         end
 
+        -- ✅ نجاح: سجل الكود واحفظه وأخفِ الواجهة فوراً
         used[input] = { t = os.time(), d = dur }
         saveUsed(used)
         sg:Destroy()
@@ -340,12 +384,115 @@ local function showKeyUI()
     end)
 end
 
---=============== البداية ===============--
-local left = activeLeft()
-if left == math.huge then
-    runPayload() -- ♾️ مدى الحياة: يشتغل مباشرة بدون عداد
-elseif left then
-    runScript(left)
-else
-    showKeyUI()
+--=============== 🎬 الانترو ===============--
+local INTRO_TIME = 19       -- ⬅️ مدة الانترو بالثواني
+local INTRO_SONG = "intro.mp3"
+local INTRO_IMG  = "intro.png"
+local SONG_URL = "https://raw.githubusercontent.com/adiixsub-source/Adiiiiiix/refs/heads/main/intro.mp3"
+local IMG_URL  = "https://raw.githubusercontent.com/adiixsub-source/Adiiiiiix/refs/heads/main/intro.png"
+
+local function playIntro(onDone)
+    local sg = Instance.new("ScreenGui")
+    sg.Name = "AdiixIntro"
+    sg.ResetOnSpawn = false
+    sg.IgnoreGuiInset = true
+    pcall(function()
+        sg.Parent = (gethui and gethui()) or game:GetService("CoreGui")
+    end)
+
+    -- شاشة سوداء كاملة
+    local bg = Instance.new("Frame")
+    bg.Size = UDim2.new(1, 0, 1, 0)
+    bg.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    bg.BorderSizePixel = 0
+    bg.Parent = sg
+
+    -- الصورة الدائرية بالنص
+    local img = Instance.new("ImageLabel")
+    img.Size = UDim2.new(0, 300, 0, 300)
+    img.Position = UDim2.new(0.5, -150, 0.5, -150)
+    img.BackgroundTransparency = 1
+    img.ImageTransparency = 1
+    img.Parent = bg
+    Instance.new("UICorner", img).CornerRadius = UDim.new(1, 0) -- ⭕ شكل دائري
+
+    -- ⬇️ تحميل الصورة والأغنية تلقائياً من GitHub (أول مرة فقط)
+    pcall(function()
+        if getcustomasset and writefile then
+            if not (isfile and isfile(INTRO_IMG)) then
+                writefile(INTRO_IMG, game:HttpGet(IMG_URL))
+            end
+            img.Image = getcustomasset(INTRO_IMG)
+        end
+    end)
+
+    local snd = nil
+    pcall(function()
+        if getcustomasset and writefile then
+            if not (isfile and isfile(INTRO_SONG)) then
+                writefile(INTRO_SONG, game:HttpGet(SONG_URL))
+            end
+            snd = Instance.new("Sound")
+            snd.SoundId = getcustomasset(INTRO_SONG)
+            snd.Volume = 1
+            snd.Parent = bg
+            snd:Play()
+        end
+    end)
+
+    -- زر Skip فوق يمين
+    local skip = Instance.new("TextButton")
+    skip.Size = UDim2.new(0, 90, 0, 32)
+    skip.Position = UDim2.new(1, -100, 0, 12)
+    skip.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    skip.TextColor3 = Color3.new(1, 1, 1)
+    skip.Font = Enum.Font.GothamBold
+    skip.TextSize = 14
+    skip.Text = "Skip ➤"
+    skip.BackgroundTransparency = 1
+    skip.TextTransparency = 1
+    skip.Parent = bg
+    Instance.new("UICorner", skip).CornerRadius = UDim.new(0, 8)
+
+    local ended = false
+    local function endIntro()
+        if ended then return end
+        ended = true
+        pcall(function()
+            if snd then snd:Stop() snd:Destroy() end
+        end)
+        sg:Destroy()
+        onDone()
+    end
+    skip.MouseButton1Click:Connect(endIntro)
+
+    task.spawn(function()
+        for i = 10, 0, -1 do
+            img.ImageTransparency = i / 10
+            skip.TextTransparency = i / 10
+            skip.BackgroundTransparency = i / 10
+            task.wait(0.05)
+        end
+        local t = 0
+        local rot = 0
+        while t < INTRO_TIME do
+            t = t + 0.05
+            rot = (rot + 4) % 360   -- 🌀 الصورة تدور مع الأغنية
+            img.Rotation = rot
+            task.wait(0.05)
+        end
+        endIntro()
+    end)
 end
+
+--=============== البداية ===============--
+playIntro(function()
+    local left = activeLeft()
+    if left == math.huge then
+        runPayload() -- ♾️ مدى الحياة: يشتغل مباشرة بدون عداد
+    elseif left then
+        runScript(left)
+    else
+        showKeyUI()
+    end
+end)
