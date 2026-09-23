@@ -9,8 +9,36 @@ local D24 = 86400
 local SAVE_FILE = "adiix_keys_v2.txt"
 local IG_URL = "https://www.instagram.com/adx4m.exe?stkn=MWJsMGpjb2FzNmY2OQ%3D%3D&utm_source=qr"
 
-local K30 = { "C8ZATW", "2TZSKT", "EJ4YJ6", "B7BVAZ", "8B3V9X", "ZHJY2G", "9BFRDH", "DG42GE", "9HM7JF", "XPNMB5", "7NPBKZ", "AWEG95", "R7NBX4", "B5U3JV", "CWZAPN", "B32H3M", "ZBKS2T", "GWWTEC", "HNDZZP", "DP888Q" }
-local K24 = { "MQT2SA", "R2RMKV", "JE2D9A", "GMJDCG", "GSMMK2", "RFJXTY", "UXNUS7", "AVCWTG", "RZXJPQ", "6UYJ57", "PHAYRZ", "78RJUG", "BE3YFP", "5PF3FX", "NNT9MT", "A83WMK", "BJCEVA", "23NM9V", "3SK797", "HK46AK" }
+local K30 = {
+    "WAJGZX", "6CQAGS", "AGXTGV", "4A3YME", "8MCC5V", "4ZT9NU", "4W5UYB", "HJCHDJ",
+    "WNNGJ8", "XVFZFN", "9WUY53", "HAKJG8", "6KXP7R", "JHUJV6", "PG9SCB", "DW3QBN",
+    "9T95AZ", "YTJWDQ", "R86JSF", "75KWVE", "2T3TAM", "A764KB", "68CSC2", "2DRUJ6",
+    "QGTZGK", "9XQTDG", "MVHGCW", "H75CHX", "GE8UR3", "4FDQQR", "ZX9DPM", "5HFQQJ",
+    "H7Q5UB", "94975F", "SGPBN9", "J3RQ89", "UZEK9U", "T2BVS5", "E8CFVX", "HD6HVW",
+    "PVT7GZ", "HPXKK2", "CR99CG", "J766NE", "4YV9XA", "4KX8ED", "DUJVZG", "WJS75C",
+    "QJA2WJ", "ZUQAC6", "7T4VED", "K6356G", "HD36PW", "E75946", "AZM735", "4J3D65",
+    "G4RK3H", "AFM58J", "WP9T8D", "9F8JDQ", "ZKVSNU", "HYA7TZ", "2XNCXM", "K5ZKKP",
+    "PKDQ8X", "6WKTAJ", "QUXRQG", "R63FCS", "WM42XG", "GAHR5C", "PWGYSH", "XA22DQ",
+    "F8TBH5", "R3X9V8", "6VZS4T", "62RJHW", "2TWJCJ", "JKTEHY", "YBPTPG", "Q7VY52",
+    "NAM258", "P2TVGG", "QAMYPF", "RDWAPU", "AWERBN", "GM2N24", "HCAT9M", "X3X28G",
+    "AEDXUG", "Y2FV2D", "48DAKX", "8PZCYW", "D25VD9", "3MQNSM", "54D8W4", "YQZ8J4",
+    "TRQZJ5", "4C6HRV", "NA5FG3", "M6YJA8",
+}
+local K24 = {
+    "CZS2YX", "S3CGYK", "VRTQ2M", "YJHDFD", "T2FGSZ", "9TJDGH", "FATJ9U", "YD5S6U",
+    "RQFB8R", "4PCWBE", "UK9D2V", "3GTQQ5", "9KWVZ8", "GGXEFC", "AQVKHY", "YRY73W",
+    "X7QTX7", "4CFK2U", "JDYY8S", "SCBQKH", "C84U89", "XJB2RX", "7FVWSC", "MMX5MY",
+    "J84URK", "M9PS9X", "TPFN2W", "2GU7QY", "D9VHEU", "UC97RD", "4SZSJ4", "9HUN7S",
+    "65J3P7", "S4JKV9", "SETMUT", "RKFYUH", "3B2Y4N", "X49SBS", "V56QTR", "ZPXER9",
+    "MYX555", "NKZ26B", "CW792Q", "DW6QY7", "B3KNET", "U3FC5W", "H7ERHH", "A36YEQ",
+    "MVWQH5", "GNRHUU", "9K9XJU", "Y2BVS7", "J3VMWW", "YZX4W7", "XKQUZC", "K2FET9",
+    "T74H4R", "42MD8E", "85Z983", "N3ATRX", "XV48DH", "A6U7GB", "47KPE8", "KSD6ER",
+    "X28P2E", "PDSP8B", "NQ85DY", "T9NPFD", "5RXWVA", "3HDUC2", "GG5ME6", "A5EEHF",
+    "XAA3HM", "FBZT2R", "3SDS8B", "35TR8B", "RPYS7C", "CVCJWT", "M9TRVD", "Y5X2ZG",
+    "QHMRPC", "QXNE7C", "4CCZ4U", "VUMDMX", "25Z9VM", "UGXGD5", "N2U459", "4WWA74",
+    "JFYKMA", "5UPEWA", "2GQMNZ", "3UCBEW", "XJXSQJ", "2DQJYS", "XBPVAK", "GEHMA2",
+    "FNYS43", "C5BA75", "UUYPDA", "M3W47C",
+}
 
 -- ♾️ كود مدى الحياة (يشتغل مرة وحدة بس، ومن يستخدمه يفتح السكربت للأبد بدون عداد)
 local LIFETIME_KEY = "SOLTAN-OSTORA12"
@@ -106,7 +134,7 @@ local function runScript(timeLeft)
             remaining = remaining - 1
         end
         sg:Destroy()
-        player:Kick("⏰ Time is over! Get a new key.")
+        player:Kick("⏰ انتهت مدة المفتاح! Key expired - Get a new key.")
     end)
 end
 
@@ -169,8 +197,8 @@ local function showAdmin()
         end
     end
 
-    makeLabel(frame, "30-min keys used:  " .. c30 .. " / 20", 52)
-    makeLabel(frame, "24-hour keys used: " .. c24 .. " / 20", 78)
+    makeLabel(frame, "30-min keys used:  " .. c30 .. " / 100", 52)
+    makeLabel(frame, "24-hour keys used: " .. c24 .. " / 100", 78)
     local lifeUsed = used[LIFETIME_KEY] and "yes (1/1)" or "no (0/1)"
     makeLabel(frame, "Lifetime key used:  " .. lifeUsed, 104)
     makeLabel(frame, "Total activations (this device): " .. (c30 + c24 + (used[LIFETIME_KEY] and 1 or 0)), 130)
