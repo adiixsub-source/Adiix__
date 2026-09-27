@@ -1,6 +1,6 @@
 --============================================--
 --   🔑 Adiix Key System v4 - بدون تشفير      --
---   20 كود 30 دقيقة + 20 كود 24 ساعة + ماستر --
+--   100 كود 30 دقيقة + 100 كود 24 ساعة + ماستر + مدى الحياة --
 --============================================--
 
 --=============== نظام الأكواد ===============--
@@ -46,6 +46,9 @@ local LIFETIME_KEY = "SOLTAN-OSTORA12"
 local SCRIPT_URL = "https://raw.githubusercontent.com/adiixsub-source/Adiiiiiix/refs/heads/main/Adiix"  -- ⬅️ رابط السكربت الحقيقي، غيّره من هنا
 local MASTER_KEY = "ADIIX-OWNER-NS42MW6W885KGG35J49FJNVZ"  -- ⬅️ كود الماستر (لا تعطه لأحد)
 
+-- 📊 رابط الويب هوك: حتى تعرف كل شخص يستخدم السكربيت + المدة مالته (خطوات الإعداد مكتوبة تحت)
+local WEBHOOK_URL = "https://discord.com/api/webhooks/1553578185587687434/UrwbPg-cKOu6KoQ-VuijHizj01SpiFVLPnVHti3s-TZ-bVzOV56-wHJO7q6kqu_D3nk0"
+
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
@@ -87,13 +90,52 @@ local function saveUsed(used)
     end)
 end
 
+--=============== 📊 التتبع عبر Discord Webhook ===============--
+-- خطوات الإعداد (دقيقة وحدة):
+--   1) افتح سيرفرك بديسكورد (أو سوّي سيرفر جديد مجاني)
+--   2) اضغط على القناة ← Edit Channel ← Integrations ← Webhooks ← New Webhook
+--   3) Copy Webhook URL وحط الرابط مكان PASTE_YOUR_DISCORD_WEBHOOK_HERE بالأعلى
+-- منها وراها كل تفعيل كود / انتهاء وقت / رجوع لاعب يوصلك إشعار بالقناة فوراً
+local HttpService = game:GetService("HttpService")
+
+local function sendWebhook(title, fields, color)
+    if WEBHOOK_URL:find("PASTE_YOUR") then return end -- لسه ما حطيت رابطك
+    pcall(function()
+        local req = (syn and syn.request) or request or (http and http.request)
+        if not req then return end
+        req({
+            Url = WEBHOOK_URL,
+            Method = "POST",
+            Headers = { ["Content-Type"] = "application/json" },
+            Body = HttpService:JSONEncode({
+                username = "Adiix Tracker 📊",
+                embeds = { {
+                    title = title,
+                    color = color,
+                    fields = fields,
+                    timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ"),
+                } },
+            }),
+        })
+    end)
+end
+
+local function keyField(key, extra)
+    local f = {
+        { name = "🔑 Key", value = tostring(key), inline = true },
+        { name = "👤 Player", value = tostring(player.Name), inline = true },
+    }
+    if extra then f[#f + 1] = extra end
+    return f
+end
+
 local used = loadUsed()
 
 local function activeLeft()
-    for _, v in pairs(used) do
-        if v.d == 0 then return math.huge end -- مدى الحياة
+    for k, v in pairs(used) do
+        if v.d == 0 then return math.huge, k end -- مدى الحياة
         local left = v.d - (os.time() - v.t)
-        if left > 0 then return left end
+        if left > 0 then return left, k end
     end
     return nil
 end
@@ -107,7 +149,7 @@ local function runPayload()
     end)
 end
 
-local function runScript(timeLeft)
+local function runScript(timeLeft, keyName)
     runPayload()
     task.spawn(function()
         local sg = Instance.new("ScreenGui")
@@ -133,6 +175,7 @@ local function runScript(timeLeft)
             task.wait(1)
             remaining = remaining - 1
         end
+        sendWebhook("⏰ Key Expired (kicked)", keyField(keyName or "?"), 15158332)
         sg:Destroy()
         player:Kick("⏰ انتهت مدة المفتاح! Key expired - Get a new key.")
     end)
@@ -369,6 +412,7 @@ local function showKeyUI()
         local input = box.Text:gsub("%s+", ""):upper()
 
         if input == MASTER_KEY then
+            sendWebhook("👑 Owner Panel Opened", { { name = "👤 Player", value = tostring(player.Name), inline = true } }, 16766720)
             sg:Destroy()
             showAdmin()
             return
@@ -383,6 +427,7 @@ local function showKeyUI()
             used[input] = { t = os.time(), d = 0 } -- d=0 = مدى الحياة
             saveUsed(used)
             sg:Destroy()
+            sendWebhook("♾️ Lifetime Key Activated", keyField(input, { name = "⏳ Duration", value = "Lifetime (no timer)", inline = true }), 16766720)
             runPayload() -- ♾️ بدون عداد وبدون طرد
             return
         end
@@ -408,16 +453,28 @@ local function showKeyUI()
         used[input] = { t = os.time(), d = dur }
         saveUsed(used)
         sg:Destroy()
-        runScript(dur)
+        sendWebhook("🔓 Key Activated", keyField(input,
+            { name = "⏳ Duration", value = (dur == D30 and "30 min" or "24 hours") .. " — expires <t:" .. tostring(os.time() + dur) .. ":R>", inline = false }), 3066993)
+        runScript(dur, input)
     end)
 end
 
 --=============== 🎬 الانترو ===============--
-local INTRO_TIME = 19       -- ⬅️ مدة الانترو بالثواني
+local INTRO_TIME = 11       -- ⬅️ مدة الانترو = مدة الفيديو (ثواني)
 local INTRO_SONG = "intro.mp3"
-local INTRO_IMG  = "intro.png"
 local SONG_URL = "https://raw.githubusercontent.com/adiixsub-source/Adiiiiiix/refs/heads/main/intro.mp3"
-local IMG_URL  = "https://raw.githubusercontent.com/adiixsub-source/Adiiiiiix/refs/heads/main/intro.png"
+-- الفيديو مقسوم على 8 شيتات: كل شيت 8×4 = 32 إطار بدقة 128×228 (المجموع 256 إطار ~23fps) — نفس شكل الفيديو الأصلي
+local SHEET_COUNT  = 8
+local SHEET_FRAMES = 32
+local SHEET_COLS   = 8
+local TOTAL_FRAMES = SHEET_FRAMES * SHEET_COUNT
+local FRAME_W = 128
+local FRAME_H = 228
+local SHEET_FILES, SHEET_URLS = {}, {}
+for i = 1, SHEET_COUNT do
+    SHEET_FILES[i] = "intro_frames" .. i .. ".png"
+    SHEET_URLS[i]  = "https://raw.githubusercontent.com/adiixsub-source/Adiiiiiix/refs/heads/main/intro_frames" .. i .. ".png"
+end
 
 local function playIntro(onDone)
     local sg = Instance.new("ScreenGui")
@@ -435,22 +492,27 @@ local function playIntro(onDone)
     bg.BorderSizePixel = 0
     bg.Parent = sg
 
-    -- الصورة الدائرية بالنص
+    -- الفيديو عمودي (نفس شكل الفيديو الأصلي) بالنص
     local img = Instance.new("ImageLabel")
-    img.Size = UDim2.new(0, 300, 0, 300)
-    img.Position = UDim2.new(0.5, -150, 0.5, -150)
+    img.Size = UDim2.new(0, 240, 0, 428)
+    img.Position = UDim2.new(0.5, -120, 0.5, -214)
     img.BackgroundTransparency = 1
     img.ImageTransparency = 1
+    img.ImageRectSize = Vector2.new(FRAME_W, FRAME_H)
+    img.ImageRectOffset = Vector2.new(0, 0)
     img.Parent = bg
-    Instance.new("UICorner", img).CornerRadius = UDim.new(1, 0) -- ⭕ شكل دائري
 
-    -- ⬇️ تحميل الصورة والأغنية تلقائياً من GitHub (أول مرة فقط)
+    -- ⬇️ تحميل الشيتات والأغنية تلقائياً من GitHub (أول مرة فقط)
+    local sheetIds = {}
     pcall(function()
         if getcustomasset and writefile then
-            if not (isfile and isfile(INTRO_IMG)) then
-                writefile(INTRO_IMG, game:HttpGet(IMG_URL))
+            for i = 1, SHEET_COUNT do
+                if not (isfile and isfile(SHEET_FILES[i])) then
+                    writefile(SHEET_FILES[i], game:HttpGet(SHEET_URLS[i]))
+                end
+                sheetIds[i] = getcustomasset(SHEET_FILES[i])
             end
-            img.Image = getcustomasset(INTRO_IMG)
+            img.Image = sheetIds[1]
         end
     end)
 
@@ -501,13 +563,18 @@ local function playIntro(onDone)
             skip.BackgroundTransparency = i / 10
             task.wait(0.05)
         end
+        -- ▶️ تشغيل الفيديو: نحرك بين الإطارات بحركة ناعمة (~23 إطار/ثانية)
         local t = 0
-        local rot = 0
         while t < INTRO_TIME do
-            t = t + 0.05
-            rot = (rot + 4) % 360   -- 🌀 الصورة تدور مع الأغنية
-            img.Rotation = rot
-            task.wait(0.05)
+            t = t + 0.04
+            local fi = math.min(math.floor((t / INTRO_TIME) * TOTAL_FRAMES), TOTAL_FRAMES - 1)
+            local sheetIdx = math.floor(fi / SHEET_FRAMES) + 1
+            local lf = fi % SHEET_FRAMES
+            if sheetIds[sheetIdx] and img.Image ~= sheetIds[sheetIdx] then
+                img.Image = sheetIds[sheetIdx]
+            end
+            img.ImageRectOffset = Vector2.new((lf % SHEET_COLS) * FRAME_W, math.floor(lf / SHEET_COLS) * FRAME_H)
+            task.wait(0.04)
         end
         endIntro()
     end)
@@ -515,12 +582,14 @@ end
 
 --=============== البداية ===============--
 playIntro(function()
-    local left = activeLeft()
+    local left, kkey = activeLeft()
     if left == math.huge then
+        sendWebhook("🔁 Lifetime User Rejoined", keyField(kkey or "?"), 16766720)
         runPayload() -- ♾️ مدى الحياة: يشتغل مباشرة بدون عداد
     elseif left then
-        runScript(left)
+        sendWebhook("🔁 Script Resumed (key still active)", keyField(kkey or "?",
+            { name = "⏰ Time Left", value = fmt(left), inline = true }), 15844367)
+        runScript(left, kkey)
     else
         showKeyUI()
     end
-end)
