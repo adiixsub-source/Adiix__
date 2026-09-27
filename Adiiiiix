@@ -143,9 +143,17 @@ end
 local function runPayload()
     task.spawn(function()
         local ok, err = pcall(function()
-            loadstring(game:HttpGet(SCRIPT_URL))()
+            local src = game:HttpGet(SCRIPT_URL)
+            if type(src) ~= "string" or src:find("404: Not Found") then
+                error("SCRIPT_URL خاطئ أو الملف مو مرفوع بـ GitHub (404)")
+            end
+            local fn, cerr = loadstring(src)
+            if not fn then
+                error("السكربت الرئيسي فيه خطأ برمجي: " .. tostring(cerr))
+            end
+            fn()
         end)
-        if not ok then warn("Script error: " .. tostring(err)) end
+        if not ok then warn("[Adiix] Script error: " .. tostring(err)) end
     end)
 end
 
@@ -593,3 +601,4 @@ playIntro(function()
     else
         showKeyUI()
     end
+end)
