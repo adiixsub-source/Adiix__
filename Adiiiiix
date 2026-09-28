@@ -7,7 +7,7 @@
 local D30 = 1800
 local D24 = 86400
 local SAVE_FILE = "adiix_keys_v2.txt"
-local IG_URL = "https://www.instagram.com/adx4m.exe?stkn=MWJsMGpjb2FzNmY2OQ%3D%3D&utm_source=qr"
+local SITE_URL = "https://adiiix.kimi.pro/get-key" -- 🌐 صفحة المفتاح المجاني
 
 local K30 = {
     "WAJGZX", "6CQAGS", "AGXTGV", "4A3YME", "8MCC5V", "4ZT9NU", "4W5UYB", "HJCHDJ",
@@ -48,6 +48,11 @@ local MASTER_KEY = "ADIIX-OWNER-NS42MW6W885KGG35J49FJNVZ"  -- ⬅️ كود ال
 
 -- 📊 رابط الويب هوك: حتى تعرف كل شخص يستخدم السكربيت + المدة مالته (خطوات الإعداد مكتوبة تحت)
 local WEBHOOK_URL = "https://discord.com/api/webhooks/1553578185587687434/UrwbPg-cKOu6KoQ-VuijHizj01SpiFVLPnVHti3s-TZ-bVzOV56-wHJO7q6kqu_D3nk0"
+
+-- 🌐 رابط موقع المفاتيح (بعد ما تنشر الموقع حط رابطه هنا — مثال: "https://adiix.ok.kimi.link")
+-- يخلي السكربيت يقبل مفاتيح الموقع (مفاتيح الإعلانات + المفاتيح الدائمة المباعة) ويتأكد منها أونلاين
+-- إذا خليته فارغ "" يشتغل السكربيت بالأكواد المحلية القديمة بس
+local API_URL = "https://adiiix.kimi.pro"
 
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
@@ -127,6 +132,28 @@ local function keyField(key, extra)
     }
     if extra then f[#f + 1] = extra end
     return f
+end
+
+-- 🌐 يتحقق من الكي عند الموقع (يرجع nil إذا السيرفر مو متاح)
+local function validateOnline(key)
+    if API_URL == "" then return nil end
+    local out = nil
+    pcall(function()
+        local req = (syn and syn.request) or request or (http and http.request)
+        if not req then return end
+        local hwid = nil
+        pcall(function() if gethwid then hwid = gethwid() end end)
+        local res = req({
+            Url = API_URL .. "/api/script/validate",
+            Method = "POST",
+            Headers = { ["Content-Type"] = "application/json" },
+            Body = HttpService:JSONEncode({ key = key, hwid = hwid }),
+        })
+        if res and res.Body then
+            out = HttpService:JSONDecode(res.Body)
+        end
+    end)
+    return out
 end
 
 local used = loadUsed()
@@ -385,13 +412,13 @@ local function showKeyUI()
     btn.Parent = frame
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 10)
 
-    -- زر الإنستغرام (من ما عنده كود يتواصل وياك)
+    -- زر الموقع (من ما عنده كود ياخذ مفتاح مجاني)
     local ig = Instance.new("TextButton")
     ig.Size = UDim2.new(1, -40, 0, 36)
     ig.Position = UDim2.new(0, 20, 0, 182)
-    ig.BackgroundColor3 = Color3.fromRGB(195, 45, 130)
-    ig.Text = "📸  Get a key — Instagram"
-    ig.TextColor3 = Color3.new(1, 1, 1)
+    ig.BackgroundColor3 = Color3.fromRGB(255, 184, 0)
+    ig.Text = "🔑  احصل على المفتاح من هنا"
+    ig.TextColor3 = Color3.fromRGB(20, 20, 20)
     ig.Font = Enum.Font.GothamBold
     ig.TextSize = 14
     ig.Parent = frame
@@ -410,10 +437,10 @@ local function showKeyUI()
 
     ig.MouseButton1Click:Connect(function()
         pcall(function()
-            if setclipboard then setclipboard(IG_URL) end
+            if setclipboard then setclipboard(SITE_URL) end
         end)
         status.TextColor3 = Color3.fromRGB(80, 255, 120)
-        status.Text = "✅ Instagram link copied! Paste it in your browser."
+        status.Text = "✅ تم نسخ رابط الموقع! الصقه بالمتصفح (copied!)"
     end)
 
     btn.MouseButton1Click:Connect(function()
@@ -451,6 +478,47 @@ local function showKeyUI()
         if inList(K30, input) then dur = D30
         elseif inList(K24, input) then dur = D24 end
 
+        -- 🌐 كي من الموقع؟ (مفاتيح الإعلانات والمفاتيح الدائمة المشتراة)
+        if not dur and API_URL ~= "" then
+            status.TextColor3 = Color3.fromRGB(255, 200, 60)
+            status.Text = "⏳ جاري التحقق من الموقع..."
+            local res = validateOnline(input)
+            if res and res.ok then
+                if res.type == "lifetime" then
+                    used[input] = { t = os.time(), d = 0 }
+                    saveUsed(used)
+                    sg:Destroy()
+                    sendWebhook("♾️ Lifetime Key Activated (Website)", keyField(input,
+                        { name = "⏳ Duration", value = "Lifetime (no timer)", inline = true }), 16766720)
+                    runPayload() -- ♾️ بدون عداد وبدون طرد
+                else
+                    local secs = tonumber(res.seconds) or 0
+                    if secs <= 0 then
+                        status.TextColor3 = Color3.fromRGB(255, 80, 80)
+                        status.Text = "❌ This key expired!"
+                        return
+                    end
+                    used[input] = { t = os.time(), d = secs }
+                    saveUsed(used)
+                    sg:Destroy()
+                    sendWebhook("🔓 Key Activated (Website)", keyField(input,
+                        { name = "⏳ Duration", value = fmt(secs) .. " — expires <t:" .. tostring(os.time() + secs) .. ":R>", inline = false }), 3066993)
+                    runScript(secs, input)
+                end
+            elseif res then
+                local r = tostring(res.reason)
+                status.TextColor3 = Color3.fromRGB(255, 80, 80)
+                if r == "used_by_other" then status.Text = "❌ Key is used on another device!"
+                elseif r == "expired" then status.Text = "❌ This key expired!"
+                elseif r == "revoked" then status.Text = "❌ This key was revoked!"
+                else status.Text = "❌ Wrong key!" end
+            else
+                status.TextColor3 = Color3.fromRGB(255, 80, 80)
+                status.Text = "❌ Wrong key! (or website offline)"
+            end
+            return
+        end
+
         if not dur then
             status.TextColor3 = Color3.fromRGB(255, 80, 80)
             status.Text = "❌ Wrong key!"
@@ -468,21 +536,11 @@ local function showKeyUI()
 end
 
 --=============== 🎬 الانترو ===============--
-local INTRO_TIME = 11       -- ⬅️ مدة الانترو = مدة الفيديو (ثواني)
+local INTRO_TIME = 19       -- ⬅️ مدة الانترو بالثواني
 local INTRO_SONG = "intro.mp3"
+local INTRO_IMG  = "intro.png"
 local SONG_URL = "https://raw.githubusercontent.com/adiixsub-source/Adiiiiiix/refs/heads/main/intro.mp3"
--- الفيديو مقسوم على 8 شيتات: كل شيت 8×4 = 32 إطار بدقة 128×228 (المجموع 256 إطار ~23fps) — نفس شكل الفيديو الأصلي
-local SHEET_COUNT  = 8
-local SHEET_FRAMES = 32
-local SHEET_COLS   = 8
-local TOTAL_FRAMES = SHEET_FRAMES * SHEET_COUNT
-local FRAME_W = 128
-local FRAME_H = 228
-local SHEET_FILES, SHEET_URLS = {}, {}
-for i = 1, SHEET_COUNT do
-    SHEET_FILES[i] = "intro_frames" .. i .. ".png"
-    SHEET_URLS[i]  = "https://raw.githubusercontent.com/adiixsub-source/Adiiiiiix/refs/heads/main/intro_frames" .. i .. ".png"
-end
+local IMG_URL  = "https://raw.githubusercontent.com/adiixsub-source/Adiiiiiix/refs/heads/main/intro.png"
 
 local function playIntro(onDone)
     local sg = Instance.new("ScreenGui")
@@ -500,27 +558,22 @@ local function playIntro(onDone)
     bg.BorderSizePixel = 0
     bg.Parent = sg
 
-    -- الفيديو عمودي (نفس شكل الفيديو الأصلي) بالنص
+    -- الصورة الدائرية بالنص
     local img = Instance.new("ImageLabel")
-    img.Size = UDim2.new(0, 240, 0, 428)
-    img.Position = UDim2.new(0.5, -120, 0.5, -214)
+    img.Size = UDim2.new(0, 300, 0, 300)
+    img.Position = UDim2.new(0.5, -150, 0.5, -150)
     img.BackgroundTransparency = 1
     img.ImageTransparency = 1
-    img.ImageRectSize = Vector2.new(FRAME_W, FRAME_H)
-    img.ImageRectOffset = Vector2.new(0, 0)
     img.Parent = bg
+    Instance.new("UICorner", img).CornerRadius = UDim.new(1, 0) -- ⭕ شكل دائري
 
-    -- ⬇️ تحميل الشيتات والأغنية تلقائياً من GitHub (أول مرة فقط)
-    local sheetIds = {}
+    -- ⬇️ تحميل الصورة والأغنية تلقائياً من GitHub (أول مرة فقط)
     pcall(function()
         if getcustomasset and writefile then
-            for i = 1, SHEET_COUNT do
-                if not (isfile and isfile(SHEET_FILES[i])) then
-                    writefile(SHEET_FILES[i], game:HttpGet(SHEET_URLS[i]))
-                end
-                sheetIds[i] = getcustomasset(SHEET_FILES[i])
+            if not (isfile and isfile(INTRO_IMG)) then
+                writefile(INTRO_IMG, game:HttpGet(IMG_URL))
             end
-            img.Image = sheetIds[1]
+            img.Image = getcustomasset(INTRO_IMG)
         end
     end)
 
@@ -571,26 +624,53 @@ local function playIntro(onDone)
             skip.BackgroundTransparency = i / 10
             task.wait(0.05)
         end
-        -- ▶️ تشغيل الفيديو: نحرك بين الإطارات بحركة ناعمة (~23 إطار/ثانية)
         local t = 0
+        local rot = 0
         while t < INTRO_TIME do
-            t = t + 0.04
-            local fi = math.min(math.floor((t / INTRO_TIME) * TOTAL_FRAMES), TOTAL_FRAMES - 1)
-            local sheetIdx = math.floor(fi / SHEET_FRAMES) + 1
-            local lf = fi % SHEET_FRAMES
-            if sheetIds[sheetIdx] and img.Image ~= sheetIds[sheetIdx] then
-                img.Image = sheetIds[sheetIdx]
-            end
-            img.ImageRectOffset = Vector2.new((lf % SHEET_COLS) * FRAME_W, math.floor(lf / SHEET_COLS) * FRAME_H)
-            task.wait(0.04)
+            t = t + 0.05
+            rot = (rot + 4) % 360   -- 🌀 الصورة تدور مع الأغنية
+            img.Rotation = rot
+            task.wait(0.05)
         end
         endIntro()
     end)
 end
 
+
 --=============== البداية ===============--
 playIntro(function()
     local left, kkey = activeLeft()
+
+    -- 🌐 كي من الموقع؟ نتحقق أونلاين كل تشغيل (انتهاء/إلغاء/جهاز ثاني)
+    local isWebKey = kkey and API_URL ~= "" and not inList(K30, kkey) and not inList(K24, kkey)
+        and kkey ~= LIFETIME_KEY and kkey ~= MASTER_KEY
+    if left and isWebKey then
+        local res = validateOnline(kkey)
+        if res and res.ok then
+            if res.type == "lifetime" then
+                sendWebhook("🔁 Lifetime User Rejoined (Website)", keyField(kkey), 16766720)
+                runPayload()
+            else
+                local secs = tonumber(res.seconds) or 0
+                if secs <= 0 then
+                    showKeyUI()
+                else
+                    sendWebhook("🔁 Script Resumed (Website)", keyField(kkey,
+                        { name = "⏰ Time Left", value = fmt(secs), inline = true }), 15844367)
+                    runScript(secs, kkey)
+                end
+            end
+        elseif res and not res.ok then
+            showKeyUI() -- ❌ منتهي أو ملغي أو مستخدم بجهاز ثاني
+        else
+            -- الموقع مطفي؟ نكمّل بالوقت المحلي
+            sendWebhook("🔁 Script Resumed (offline fallback)", keyField(kkey,
+                { name = "⏰ Time Left", value = fmt(left), inline = true }), 15844367)
+            runScript(left, kkey)
+        end
+        return
+    end
+
     if left == math.huge then
         sendWebhook("🔁 Lifetime User Rejoined", keyField(kkey or "?"), 16766720)
         runPayload() -- ♾️ مدى الحياة: يشتغل مباشرة بدون عداد
